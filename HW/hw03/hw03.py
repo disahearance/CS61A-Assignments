@@ -25,6 +25,12 @@ def num_eights(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n == 0:
+        return 0
+    if n % 10 == 8:
+        return 1 + num_eights(n // 10)
+    else:
+        return num_eights(n // 10)
 
 
 def digit_distance(n):
@@ -36,7 +42,7 @@ def digit_distance(n):
     0
     >>> digit_distance(314) # 2 + 3
     5
-    >>> digit_distance(31415926535) # 2 + 3 + 3 + 4 + ... + 2
+    >>> digit_distance(31415926535) # 2 + 3 + 3 + 4 + 4 + 7 + 4 + 1 + 2 + 2 = 32
     32
     >>> digit_distance(3464660003)  # 1 + 2 + 2 + 2 + ... + 3
     16
@@ -47,8 +53,11 @@ def digit_distance(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n < 10:
+        return 0
+    return abs(n % 10 - (n // 10) % 10) + digit_distance(n // 10)
 
-
+# 创建内部函数（k），进行计数跟踪
 def interleaved_sum(n, odd_func, even_func):
     """Compute the sum odd_func(1) + even_func(2) + odd_func(3) + ..., up
     to n.
@@ -71,7 +80,11 @@ def interleaved_sum(n, odd_func, even_func):
     True
     """
     "*** YOUR CODE HERE ***"
-
+    def follow(k, odd_func, even_func):
+        if k == n:
+            return odd_func(n)
+        return odd_func(k) + follow(k+1, even_func, odd_func)
+    return follow(1, odd_func, even_func)
 
 def next_smaller_dollar(bill):
     """Returns the next smaller bill in order."""
@@ -107,6 +120,19 @@ def count_dollars(total):
     True
     """
     "*** YOUR CODE HERE ***"
+    def follow(total, bill):
+        if bill is None:
+            return 0
+        if total < 0:
+            return 0
+        elif total == 0: 
+            return 1 
+        use_current = follow(total, next_smaller_dollar(bill))
+        skip_current = follow(total - bill, bill)
+        return use_current + skip_current
+    
+    return follow(total, 100)
+# 本质上和经典的分割数字问题是一样的问题，只不过分割数字是 分割数m->m-1->……->1，这里是dollar从100->50->……
 
 
 def next_larger_dollar(bill):
@@ -143,6 +169,17 @@ def count_dollars_upward(total):
     True
     """
     "*** YOUR CODE HERE ***"
+    def follow(total, bill):
+        if bill is None:
+            return 0
+        if total < 0:
+            return 0
+        elif total == 0: 
+            return 1 
+        use_current = follow(total, next_larger_dollar(bill))
+        skip_current = follow(total - bill, bill)
+        return use_current + skip_current
+    return follow(total, 1)
 
 
 def print_move(origin, destination):
@@ -178,6 +215,15 @@ def move_stack(n, start, end):
     """
     assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
     "*** YOUR CODE HERE ***"
+    mid = 6 - start - end
+    if n == 1:
+        print_move(start, end)
+        return None
+    move_stack(n-1, start, mid)
+    move_stack(1, start, end)
+    move_stack(n-1, mid, end)
+    
+# 莫名奇妙就写出来了
 
 
 from operator import sub, mul
@@ -193,5 +239,4 @@ def make_anonymous_factorial():
     ...     ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
-
+    return (lambda f: lambda k: f(f, k))(lambda f, k: k if k == 1 else k * f(f, k - 1))
